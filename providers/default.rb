@@ -4,16 +4,19 @@ def load_current_resource
   @zpool = Chef::Resource::Zpool.new(new_resource.name)
   @zpool.name(new_resource.name)
   @zpool.disks(new_resource.disks)
+  @zpool.mountpoint(new_resource.mountpoint)
+  @zpool.force(new_resource.force)
 
   @zpool.info(info?)
   @zpool.state(state?)
-
 end
 
 action :create do
   unless created?
     Chef::Log.info("Creating zpool #{@zpool.name}")
-    system("zpool create #{@zpool.name} #{@zpool.disks.join(' ')}")
+    mount = "-m #{@zpool.mountpoint}" if @zpool.mountpoint 
+    force = "-f" if @zpool.force 
+    system("zpool create #{force} #{mount} #{@zpool.name} #{@zpool.disks.join(' ')}")
     new_resource.updated_by_last_action(true)
   else
     unless online?
@@ -36,7 +39,6 @@ def created?
   @zpool.info.exitstatus.zero?
 end
 
-
 def state?
   @zpool.info.stdout.chomp
 end
@@ -46,6 +48,5 @@ def info?
 end
 
 def online?
-  @zpool.state == "ONLINE"
+  @zpool.state == 'ONLINE'
 end
-
