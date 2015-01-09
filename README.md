@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/wix/zpool.png)](http://travis-ci.org/wix/zpool)
+[![Build Status](https://secure.travis-ci.org/marthag8/zpool.png)](http://travis-ci.org/marthag8/zpool)
 
 Description
 ===========
