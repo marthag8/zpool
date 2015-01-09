@@ -70,11 +70,9 @@ end
 
 def vdevs
   @vdevs ||= shell_out!("zpool status #{@zpool.name}").stdout.lines.map do |line|
-    puts "VDEVS #{line}"
     next unless line.chomp =~ /^[\t]  /
     line.chomp.split("\s")[0]
   end.compact
-  puts "Found devices #{@vdevs}"
   @vdevs
 end
 
