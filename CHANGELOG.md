@@ -1,6 +1,6 @@
 # Revision History for zpool
 
-## 0.0.4
+## 0.0.3
 
 * Add the force and mountpoint resource options.
 * Set up test-kitchen use and add serverspec tests
