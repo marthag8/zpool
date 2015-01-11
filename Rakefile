@@ -1,9 +1,9 @@
 require 'foodcritic'
 require 'foodcritic/rake_task'
-require 'tailor/rake_task'
-require 'rspec/core/rake_task'
+# require 'tailor/rake_task'
+# require 'rspec/core/rake_task'
 
-require 'kitchen/rake_tasks'
+# require 'kitchen/rake_tasks'
 
 # Style tests (Foodcritic / Tailor)
 FoodCritic::Rake::LintTask.new
