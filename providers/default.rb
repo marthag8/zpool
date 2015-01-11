@@ -7,7 +7,6 @@ def load_current_resource
 
   @zpool.info(info)
   @zpool.state(state)
-
 end
 
 action :create do
@@ -15,11 +14,10 @@ action :create do
     if online?
       @zpool.disks.each do |disk|
         short_disk = disk.split('/').last
-        unless vdevs.include? short_disk
-          Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
-          shell_out!("zpool add #{args_from_resource(new_resource)} #{@zpool.name} #{disk}")
-          new_resource.updated_by_last_action(true)
-        end
+        next if vdevs.include? short_disk
+        Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
+        shell_out!("zpool add #{args_from_resource(new_resource)} #{@zpool.name} #{disk}")
+        new_resource.updated_by_last_action(true)
       end
     else
       Chef::Log.warn("Zpool #{@zpool.name} is #{@zpool.state}")
@@ -42,17 +40,13 @@ end
 private
 
 def args_from_resource(new_resource)
-  args = Array.new
-  if new_resource.force
-    args << '-f'
-  end
-  if new_resource.recursive
-    args << '-r'
-  end
+  args = []
+  args << '-f' if new_resource.force
+  args << '-r' if new_resource.recursive
 
   # Properties
   args << '-o'
-  args << 'ashift=%s' % [new_resource.ashift]
+  args << format('ashift=%s', new_resource.ashift)
 
   args.join(' ')
 end
@@ -60,7 +54,6 @@ end
 def created?
   @zpool.info.exitstatus.zero?
 end
-
 
 def state
   @zpool.info.stdout.chomp
@@ -79,6 +72,5 @@ def vdevs
 end
 
 def online?
-  @zpool.state == "ONLINE"
+  @zpool.state == 'ONLINE'
 end
-
