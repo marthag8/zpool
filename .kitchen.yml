@@ -1,0 +1,33 @@
+---
+driver:
+  name: vagrant
+  vagrantfile_erb: Vagrantfile.erb
+  vagrantfiles:
+    - vagrantfile_disks.rb
+driver_config:
+  http_proxy: http://webproxysea.nordstrom.net:8181
+  https_proxy: http://webproxysea.nordstrom.net:8181
+
+provisioner:
+  name: chef_solo
+  require_chef_omnibus: true
+  chef_omnibus_url: https://www.chef.io/chef/install.sh
+
+platforms:
+  - name: nordsol11
+    driver_config:
+      box: nordsol11
+      box_url: http://y0319p297.nordstrom.net/downloads/vagrant-solaris11.box
+  #- name: oracle-solaris-11
+  #  driver_config:
+  #    box: oracle-solaris-11
+ #     box_url: http://vagrantcloud.com/ruby-concurrency/oracle-solaris-11/version/1/provider/virtualbox.box
+  - name: ubuntu
+    driver_config:
+      box: opscode_ubuntu
+      box_url: http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-14.10_chef-provisionerless.box
+suites:
+  - name: default
+    run_list:
+      - recipe[zpool_tester::default]
+      - recipe[kitchen_aide::solaris_busser]

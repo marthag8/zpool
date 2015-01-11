@@ -4,10 +4,11 @@ def load_current_resource
   @zpool = Chef::Resource::Zpool.new(new_resource.name)
   @zpool.name(new_resource.name)
   @zpool.disks(new_resource.disks)
+  @zpool.mountpoint(new_resource.mountpoint)
+  @zpool.force(new_resource.force)
 
   @zpool.info(info)
   @zpool.state(state)
-
 end
 
 action :create do
@@ -15,18 +16,18 @@ action :create do
     if online?
       @zpool.disks.each do |disk|
         short_disk = disk.split('/').last
-        unless vdevs.include? short_disk
-          Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
-          shell_out!("zpool add #{args_from_resource(new_resource)} #{@zpool.name} #{disk}")
-          new_resource.updated_by_last_action(true)
-        end
+        next if vdevs.include? short_disk
+        Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
+        shell_out!("zpool add #{args_from_resource(new_resource)} #{@zpool.name} #{disk}")
+        new_resource.updated_by_last_action(true)
       end
     else
       Chef::Log.warn("Zpool #{@zpool.name} is #{@zpool.state}")
     end
   else
     Chef::Log.info("Creating zpool #{@zpool.name}")
-    shell_out!("zpool create #{args_from_resource(new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}")
+    mount_point = "-m #{@zpool.mountpoint}" if @zpool.mountpoint
+    shell_out!("zpool create #{mount_point} #{args_from_resource(new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}")
     new_resource.updated_by_last_action(true)
   end
 end
@@ -42,17 +43,15 @@ end
 private
 
 def args_from_resource(new_resource)
-  args = Array.new
-  if new_resource.force
-    args << '-f'
-  end
-  if new_resource.recursive
-    args << '-r'
-  end
+  args = []
+  args << '-f' if new_resource.force
+  args << '-r' if new_resource.recursive
 
   # Properties
-  args << '-o'
-  args << 'ashift=%s' % [new_resource.ashift]
+  if new_resource.ashift > 0
+    args << '-o'
+    args << format('ashift=%s', new_resource.ashift)
+  end
 
   args.join(' ')
 end
@@ -60,7 +59,6 @@ end
 def created?
   @zpool.info.exitstatus.zero?
 end
-
 
 def state
   @zpool.info.stdout.chomp
@@ -71,14 +69,13 @@ def info
 end
 
 def vdevs
-  @vdevs ||= shell_out("zpool list -v -H #{@zpool.name}").stdout.lines.map do |line|
-    next unless line.chomp =~ /^[\t]/
-    line.chomp.split("\t")[1]
+  @vdevs ||= shell_out!("zpool status #{@zpool.name}").stdout.lines.map do |line|
+    next unless line.chomp =~ /^[\t]  /
+    line.chomp.split("\s")[0]
   end.compact
   @vdevs
 end
 
 def online?
-  @zpool.state == "ONLINE"
+  @zpool.state == 'ONLINE'
 end
-
