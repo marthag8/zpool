@@ -7,27 +7,6 @@ require 'foodcritic/rake_task'
 
 # Style tests (Foodcritic / Tailor)
 FoodCritic::Rake::LintTask.new
-Tailor::RakeTask.new do |t|
-  {
-    spec:        'spec/zpool/*_spec.rb',
-    spec_helper: 'spec/spec_helper.rb',
-    attributes:  'attributes/*.rb',
-    resources:   'resources/*.rb',
-    providers:   'providers/*.rb',
-    libraries:   'libraries/**/*.rb',
-    recipes:     'recipes/*.rb',
-    metadata:    'metadata.rb'
-  }.each do |name, glob|
-    t.file_set glob, name do |s|
-      s.max_line_length 1000
-      s.max_code_lines_in_method 1000
-      s.max_code_lines_in_class 1000
-    end
-  end
-end
-
-desc 'Run Style Tests'
-task style: [:foodcritic, :tailor]
 
 # ChefSpec (RSpec)
 RSpec::Core::RakeTask.new
