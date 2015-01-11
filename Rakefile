@@ -43,5 +43,5 @@ end
 private
 
 def sandbox_path
-  File.join(File.dirname(__FILE__), %w(tmp cookbooks cookbook))
+  File.join(File.dirname(__FILE__), %w(tmp cookbooks zpool))
 end
