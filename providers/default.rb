@@ -4,6 +4,8 @@ def load_current_resource
   @zpool = Chef::Resource::Zpool.new(new_resource.name)
   @zpool.name(new_resource.name)
   @zpool.disks(new_resource.disks)
+  @zpool.mountpoint(new_resource.mountpoint)
+  @zpool.force(new_resource.force)
 
   @zpool.info(info)
   @zpool.state(state)
@@ -14,7 +16,8 @@ action :create do
     if online?
       @zpool.disks.each do |disk|
         short_disk = disk.split('/').last
-        next if vdevs.include? short_disk
+        next if vdevs.include?(short_disk)
+        next if vdevs.include?(disk)
         Chef::Log.info("Adding #{disk} to pool #{@zpool.name}")
         shell_out!("zpool add #{args_from_resource(new_resource)} #{@zpool.name} #{disk}")
         new_resource.updated_by_last_action(true)
@@ -24,7 +27,8 @@ action :create do
     end
   else
     Chef::Log.info("Creating zpool #{@zpool.name}")
-    shell_out!("zpool create #{args_from_resource(new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}")
+    mount_point = @zpool.mountpoint ? "-m #{@zpool.mountpoint}" : ''
+    shell_out!("zpool create #{mount_point} #{args_from_resource(new_resource)} #{@zpool.name} #{@zpool.disks.join(' ')}")
     new_resource.updated_by_last_action(true)
   end
 end
@@ -45,8 +49,10 @@ def args_from_resource(new_resource)
   args << '-r' if new_resource.recursive
 
   # Properties
-  args << '-o'
-  args << format('ashift=%s', new_resource.ashift)
+  if new_resource.ashift > 0
+    args << '-o'
+    args << format('ashift=%s', new_resource.ashift)
+  end
 
   args.join(' ')
 end
@@ -64,10 +70,10 @@ def info
 end
 
 def vdevs
-  @vdevs ||= shell_out("zpool list -v -H #{@zpool.name}").stdout.lines.map do |line|
-    next unless line.chomp =~ /^[\t]/
-    line.chomp.split("\t")[1]
-  end.compact
+  @vdevs ||= shell_out!("zpool status #{@zpool.name}").stdout.lines.map do |line|
+    next unless line.chomp =~ /^[\t]  /
+    line.chomp.split("\s")[0]
+  end
   @vdevs
 end
 
