@@ -17,4 +17,8 @@ context 'zpool_tester' do
   describe command('zpool list') do
     its(:stdout) { is_expected.not_to match(/zpool2/) }
   end
+
+  describe command('zpool list') do
+    its(:stdout) { is_expected.to match(/test/) }
+  end
 end

@@ -1,5 +1,6 @@
 include Chef::Mixin::ShellOut
 
+# rubocop:disable Metrics/AbcSize
 def load_current_resource
   @zpool = Chef::Resource::Zpool.new(new_resource.name)
   @zpool.name(new_resource.name)
