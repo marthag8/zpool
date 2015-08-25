@@ -1,0 +1,23 @@
+---
+driver:
+  name: vagrant
+
+provisioner:
+  name: chef_solo
+  require_chef_omnibus: 12.4.1
+  chef_omnibus_url: https://www.chef.io/chef/install.sh
+
+platforms:
+  - name: zpool-solaris-11
+    driver:
+      box: benden-solaris-11.2
+      box_url: http://www.benden.us/vagrant/solaris-11.2.box
+  - name: zpool_ubuntu
+    driver:
+      box: opscode_ubuntu
+      box_url: http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_ubuntu-14.10_chef-provisionerless.box
+suites:
+  - name: default
+    run_list:
+      - recipe[zpool_tester::default]
+      - recipe[kitchen_aide::solaris_busser]
