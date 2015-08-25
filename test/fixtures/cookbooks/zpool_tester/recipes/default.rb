@@ -4,7 +4,7 @@ package 'zfs-fuse' do
 end
 
 # set up zpools
-%w(disk0 disk1 disk2 disk3).each do |disk|
+%w(disk0 disk1 disk2 disk3 disk4 disk5).each do |disk|
   execute disk  do
     command "dd if=/dev/zero of=/#{disk} bs=1024 count=65536"
     not_if { File.exist?("/#{disk}") }
@@ -30,4 +30,8 @@ end
 zpool 'destroy_zpool' do
   name 'zpool2'
   action :destroy
+end
+
+zpool 'test' do
+  disks %w(/disk4 /disk5)
 end

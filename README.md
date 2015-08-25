@@ -16,7 +16,15 @@ Solaris, zpool.
 Attributes
 ==========
 
-    disks - Array of disks to put in the pool.
+- name - Name of the zpool.
+- action - Create or destroy.
+- ashift - Set sector size, support by the OS is not verified.
+- disks - Array of disks to put in the pool.
+- force - Force the use of vdevs, even if they appear to be in use.
+- info -  Shellout information about the zpool.
+- mountpoint - Mountpoint for the top-level file system, absolute path or 'none'.
+- recursive - Add a -r to the command.
+- state - Shellout information about the zpool.
 
 Usage
 =====
